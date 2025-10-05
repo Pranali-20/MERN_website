@@ -12,6 +12,8 @@ const OwnerDashboard = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [user, setUser] = useState(null);
   const [meals, setMeals] = useState([]);
+  const [stores, setStores] = useState([]);
+  const [selectedStore, setSelectedStore] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -32,6 +34,7 @@ const OwnerDashboard = () => {
     }
 
     setUser(parsedUser);
+    fetchStores();
     fetchMeals();
   }, [navigate]);
 
@@ -46,6 +49,18 @@ const OwnerDashboard = () => {
       console.error('Error fetching meals:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStores = async () => {
+    try {
+      const response = await api.getOwnerStores();
+      setStores(response.data || []);
+      if (response.data && response.data.length > 0) {
+        setSelectedStore(response.data[0]._id);
+      }
+    } catch (err) {
+      console.error('Error fetching stores:', err);
     }
   };
 
@@ -76,9 +91,10 @@ const OwnerDashboard = () => {
         price: parseFloat(data.price),
         image: data.image,
         category: data.category,
-        timeOfDay: activeTab,
+        timeOfDay: [activeTab],
         tags: data.tags ? (Array.isArray(data.tags) ? data.tags : [data.tags]) : [],
         preparationTime: parseInt(data.preparationTime) || 15,
+        store: data.store || selectedStore,
         isAvailable: true
       };
 
@@ -112,7 +128,8 @@ const OwnerDashboard = () => {
       image: item.image,
       category: item.category,
       tags: item.tags,
-      preparationTime: item.preparationTime
+      preparationTime: item.preparationTime,
+      store: item.store?._id || item.store
     });
   };
 
@@ -154,7 +171,11 @@ const OwnerDashboard = () => {
     reset();
   };
 
-  const filteredMeals = meals.filter(meal => meal.timeOfDay === activeTab);
+  const filteredMeals = meals.filter(meal =>
+    Array.isArray(meal.timeOfDay)
+      ? meal.timeOfDay.includes(activeTab)
+      : meal.timeOfDay === activeTab
+  );
 
   if (!user) {
     return (
@@ -299,7 +320,26 @@ const OwnerDashboard = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Store *
+                  </label>
+                  <select
+                    {...register('store', { required: 'Store is required' })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    defaultValue={selectedStore}
+                  >
+                    <option value="">Select store</option>
+                    {stores.map(store => (
+                      <option key={store._id} value={store._id}>{store.name}</option>
+                    ))}
+                  </select>
+                  {errors.store && (
+                    <p className="mt-1 text-sm text-red-600">{errors.store.message}</p>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Category *

@@ -193,4 +193,77 @@ export const api = {
 
     return data;
   },
+
+  async getStores(filters = {}) {
+    const queryParams = new URLSearchParams(filters).toString();
+    const url = queryParams ? `${API_URL}/stores?${queryParams}` : `${API_URL}/stores`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch stores');
+    }
+
+    return data;
+  },
+
+  async getStore(storeId) {
+    const response = await fetch(`${API_URL}/stores/${storeId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch store');
+    }
+
+    return data;
+  },
+
+  async getMealsByStore(storeId) {
+    const response = await fetch(`${API_URL}/meals/store/${storeId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch store meals');
+    }
+
+    return data;
+  },
+
+  async getOwnerStores() {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/stores`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch stores');
+    }
+
+    return data;
+  },
 };

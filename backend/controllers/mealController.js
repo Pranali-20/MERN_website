@@ -65,7 +65,8 @@ const getMeals = async (req, res) => {
       .sort(sortOptions)
       .skip(skip)
       .limit(limit)
-      .populate('createdBy', 'name');
+      .populate('createdBy', 'name')
+      .populate('store', 'name');
 
     const total = await Meal.countDocuments(query);
 
@@ -93,7 +94,7 @@ const getMeals = async (req, res) => {
 // @access  Public
 const getMeal = async (req, res) => {
   try {
-    const meal = await Meal.findById(req.params.id).populate('createdBy', 'name');
+    const meal = await Meal.findById(req.params.id).populate('createdBy', 'name').populate('store', 'name');
 
     if (!meal) {
       return res.status(404).json({
@@ -375,6 +376,49 @@ const getMealsByTime = async (req, res) => {
   }
 };
 
+// @desc    Get meals by store
+// @route   GET /api/meals/store/:storeId
+// @access  Public
+const getMealsByStore = async (req, res) => {
+  try {
+    const { storeId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const meals = await Meal.find({
+      store: storeId,
+      isAvailable: true
+    })
+      .sort({ rating: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('store', 'name');
+
+    const total = await Meal.countDocuments({
+      store: storeId,
+      isAvailable: true
+    });
+
+    res.status(200).json({
+      success: true,
+      count: meals.length,
+      total,
+      pagination: {
+        page,
+        pages: Math.ceil(total / limit)
+      },
+      data: meals
+    });
+  } catch (error) {
+    console.error('Get meals by store error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   getMeals,
   getMeal,
@@ -383,5 +427,6 @@ module.exports = {
   deleteMeal,
   searchMeals,
   getMealsByCategory,
-  getMealsByTime
+  getMealsByTime,
+  getMealsByStore
 };

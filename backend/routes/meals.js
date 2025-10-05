@@ -7,7 +7,8 @@ const {
   deleteMeal,
   searchMeals,
   getMealsByCategory,
-  getMealsByTime
+  getMealsByTime,
+  getMealsByStore
 } = require('../controllers/mealController');
 const { protect, authorize, optionalAuth } = require('../middlewares/auth');
 const { validateMeal } = require('../middlewares/validation');
@@ -33,6 +34,11 @@ router.get('/category/:category', getMealsByCategory);
 // @desc    Get meals by time of day
 // @access  Public
 router.get('/time/:timeOfDay', getMealsByTime);
+
+// @route   GET /api/meals/store/:storeId
+// @desc    Get meals by store
+// @access  Public
+router.get('/store/:storeId', getMealsByStore);
 
 // @route   POST /api/meals
 // @desc    Create new meal (Admin/Owner only)

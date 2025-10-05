@@ -65,6 +65,10 @@ const mealSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  },
+  store: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Store'
   }
 }, {
   timestamps: true
